@@ -1,1136 +1,553 @@
+# Reconstrucción y modernización de Rick & Morty Explorer
 
-## Documentación técnica
+## 1. Resumen
 
-La documentación completa del proceso de reconstrucción y modernización del proyecto se encuentra en:
+**Rick & Morty Explorer** fue reconstruido desde cero para reemplazar una implementación anterior basada en una estructura React más antigua por una aplicación moderna, mantenible y preparada para producción.
 
-[Ver documentación completa](./docs/modernizacion.md)
+La versión final utiliza React, Vite, Tailwind CSS, React Router, Fetch API, Oxlint, GitHub Actions y Vercel.
 
-
-# Modernización del proyecto Rick & Morty
-
-## 1. Introducción
-
-El proyecto **Rick & Morty** es una aplicación web desarrollada con React que consume información de la API pública de Rick and Morty para mostrar personajes de la serie.
-
-El objetivo de este trabajo será modernizar la aplicación, actualizando su entorno de desarrollo, organización del código, interfaz visual y proceso de construcción.
-
-La modernización tendrá como base las siguientes tecnologías:
-
-* React
-* Vite
-* npm
-* Tailwind CSS
-* JavaScript moderno
-* Fetch API
-* Rick and Morty API
-* Vercel para publicación
-
-La aplicación actual publicada continúa funcionando como aplicación React del lado del cliente. El proyecto será migrado a una arquitectura basada en Vite para reemplazar el entorno anterior asociado a Create React App.
-
-Create React App fue oficialmente deprecado por React y para proyectos existentes se recomienda la migración hacia herramientas modernas como Vite.
+La aplicación permite buscar, filtrar y paginar personajes, acceder a vistas de detalle y manejar estados de carga, errores HTTP y navegación SPA.
 
 ---
 
-# 2. Objetivo general
+## 2. Objetivos alcanzados
 
-Modernizar la aplicación existente de Rick & Morty migrándola a un entorno basado en **React + Vite + Tailwind CSS**, mejorando tanto su estructura técnica como su diseño visual, mantenibilidad y experiencia de usuario.
-
----
-
-# 3. Objetivos específicos
-
-La modernización deberá permitir:
-
-* Eliminar la dependencia de Create React App.
-* Utilizar Vite como herramienta de desarrollo y construcción.
-* Administrar las dependencias utilizando npm.
-* Implementar Tailwind CSS para el diseño.
-* Mantener el consumo de la Rick and Morty API.
-* Separar componentes, servicios y vistas.
-* Mejorar la interfaz gráfica.
-* Implementar un diseño responsive.
-* Mejorar la gestión de estados de carga y errores.
-* Mantener el proyecto preparado para desplegarse en Vercel.
-* Facilitar futuras ampliaciones de funcionalidades.
-
----
-
-# 4. Situación actual
-
-La versión existente fue construida utilizando una estructura tradicional de React.
-
-La actualización propone abandonar el esquema basado en Create React App y reemplazarlo por Vite.
-
-La migración no tiene como objetivo simplemente cambiar la herramienta de compilación, sino reorganizar el proyecto para que tenga una arquitectura más clara y escalable.
+- Reconstrucción completa con React + Vite.
+- Eliminación de dependencias heredadas de Create React App.
+- Arquitectura separada por páginas, componentes, hooks y servicios.
+- Diseño responsive con Tailwind CSS.
+- Búsqueda por nombre.
+- Filtros por estado, género y especie.
+- Paginación basada en la API.
+- Vista de detalle por personaje.
+- Página 404 personalizada.
+- Skeleton loading.
+- Manejo de errores 404, 429 y errores generales.
+- Proxy local mediante Vite.
+- Proxy de producción mediante Vercel rewrites.
+- Normalización de URLs absolutas de paginación.
+- Validación con Oxlint.
+- Build de producción con Vite.
+- Integración continua con GitHub Actions.
+- Deployment en Vercel.
 
 ---
 
-# 5. Arquitectura propuesta
+## 3. Stack final
 
-La nueva aplicación continuará siendo una **Single Page Application (SPA)** desarrollada con React.
+```text
+Frontend         React 19
+Bundler          Vite 8
+UI               Tailwind CSS 4
+Routing          React Router
+HTTP             Fetch API
+Lint             Oxlint
+CI               GitHub Actions
+Deployment       Vercel
+API              Rick and Morty API
+Package manager  npm
+```
 
-La arquitectura general será:
+---
+
+## 4. Arquitectura
 
 ```text
 Usuario
-   │
-   ▼
-React
-   │
-   ▼
-Componentes / Páginas
-   │
-   ▼
-Servicios
-   │
-   ▼
-Fetch API
-   │
-   ▼
+   ↓
+React Router
+   ↓
+Pages
+   ↓
+Components
+   ↓
+Custom Hooks
+   ↓
+Services
+   ↓
+Proxy
+   ↓
 Rick and Morty API
 ```
 
-No será necesario desarrollar inicialmente un backend propio, debido a que la información se obtiene directamente desde la API pública.
+La aplicación es una **Single Page Application (SPA)**. No requiere un backend propio porque los datos provienen de una API pública.
 
 ---
 
-# 6. Stack tecnológico
-
-## Frontend
-
-**React**
-
-Se utilizará para construir la interfaz mediante componentes reutilizables.
-
-**Vite**
-
-Se utilizará como herramienta de desarrollo y construcción de la aplicación.
-
-Vite dispone actualmente de templates oficiales para React y permite crear el proyecto mediante npm.
-
-**Tailwind CSS**
-
-Será utilizado para definir:
-
-* colores;
-* tipografías;
-* espacios;
-* grillas;
-* tarjetas;
-* botones;
-* responsive design;
-* estados visuales;
-* animaciones y transiciones.
-
-La integración recomendada actualmente para proyectos Vite utiliza los paquetes `tailwindcss` y `@tailwindcss/vite`.
-
-**npm**
-
-Se utilizará como administrador de dependencias.
-
----
-
-# 7. Requisitos del entorno
-
-La versión actual de Vite requiere Node.js 20.19+ o 22.12+.
-
-Antes de comenzar deberá verificarse:
-
-```bash
-node -v
-npm -v
-```
-
----
-
-# 8. Creación del nuevo proyecto
-
-El proyecto podrá crearse inicialmente utilizando:
-
-```bash
-npm create vite@latest
-```
-
-Seleccionando:
-
-```text
-Framework: React
-Variant: JavaScript
-```
-
-También puede crearse directamente:
-
-```bash
-npm create vite@latest rick-morty -- --template react
-```
-
-Luego:
-
-```bash
-cd rick-morty
-npm install
-```
-
-El comando oficial de creación mediante npm forma parte del flujo recomendado por Vite.
-
----
-
-# 9. Instalación de Tailwind CSS
-
-Se instalarán las dependencias:
-
-```bash
-npm install tailwindcss @tailwindcss/vite
-```
-
-La configuración utilizará el plugin oficial de Tailwind para Vite.
-
----
-
-# 10. Configuración de Vite
-
-El archivo:
-
-```text
-vite.config.js
-```
-
-podrá tener la siguiente configuración:
-
-```javascript
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
-
-export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(),
-  ],
-});
-```
-
----
-
-# 11. Configuración de Tailwind
-
-En el archivo principal de estilos:
-
-```text
-src/index.css
-```
-
-se utilizará:
-
-```css
-@import "tailwindcss";
-```
-
-Esta es la sintaxis utilizada por la instalación actual de Tailwind CSS con Vite.
-
-No será necesario mantener grandes archivos CSS con estilos individuales para cada componente.
-
-La mayor parte del diseño podrá realizarse mediante clases Tailwind.
-
----
-
-# 12. Estructura propuesta
-
-La nueva estructura será:
+## 5. Estructura final
 
 ```text
 rick-morty/
-│
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+├── docs/
+│   └── modernizacion.md
 ├── public/
-│   └── assets/
-│
 ├── src/
-│   │
 │   ├── assets/
-│   │
 │   ├── components/
 │   │   ├── CharacterCard.jsx
 │   │   ├── CharacterGrid.jsx
-│   │   ├── Header.jsx
-│   │   ├── SearchBar.jsx
+│   │   ├── ErrorMessage.jsx
 │   │   ├── Filters.jsx
-│   │   ├── Pagination.jsx
+│   │   ├── Header.jsx
 │   │   ├── Loader.jsx
-│   │   └── ErrorMessage.jsx
-│   │
+│   │   ├── Pagination.jsx
+│   │   ├── ResultsSummary.jsx
+│   │   └── SearchBar.jsx
+│   ├── hooks/
+│   │   ├── useCharacter.js
+│   │   └── useCharacters.js
 │   ├── pages/
+│   │   ├── CharacterDetail.jsx
 │   │   ├── Home.jsx
-│   │   └── CharacterDetail.jsx
-│   │
+│   │   └── NotFound.jsx
 │   ├── services/
 │   │   └── characterService.js
-│   │
-│   ├── hooks/
-│   │   └── useCharacters.js
-│   │
-│   ├── utils/
-│   │
 │   ├── App.jsx
-│   ├── main.jsx
-│   └── index.css
-│
-├── .env.example
+│   ├── index.css
+│   └── main.jsx
 ├── .gitignore
-├── eslint.config.js
+├── .oxlintrc.json
+├── README.md
+├── SECURITY.md
 ├── index.html
-├── package.json
 ├── package-lock.json
-├── vite.config.js
-└── README.md
+├── package.json
+├── vercel.json
+└── vite.config.js
 ```
 
-Esta separación permitirá mantener responsabilidades claras entre interfaz, lógica y comunicación con la API.
+La versión actual no necesita variables de entorno para consumir la API, ya que utiliza rutas relativas a través del proxy.
 
 ---
 
-# 13. API utilizada
+## 6. Separación de responsabilidades
 
-La aplicación continuará utilizando la **Rick and Morty API**.
+### Pages
 
-La API dispone de tres recursos principales:
+Representan las pantallas completas de la aplicación.
 
-```text
-characters
-locations
-episodes
+### Components
+
+Contienen elementos visuales reutilizables.
+
+### Hooks
+
+Administran estado, consultas, búsqueda, filtros y paginación.
+
+### Services
+
+Centralizan la comunicación HTTP y evitan que los componentes conozcan detalles de la API.
+
+---
+
+## 7. Servicio de personajes
+
+`src/services/characterService.js` centraliza el acceso a la API.
+
+Operaciones principales:
+
+```javascript
+getCharacters()
+getCharacterById(id)
 ```
 
-La URL base es:
+`getCharacters()` soporta filtros y paginación.
+
+`getCharacterById(id)` obtiene un personaje individual.
+
+---
+
+## 8. Proxy de API
+
+La aplicación consume internamente:
+
+```text
+/api/rickmorty
+```
+
+En lugar de consultar directamente desde el navegador:
 
 ```text
 https://rickandmortyapi.com/api
 ```
 
-Para personajes:
+Esta decisión evita depender de solicitudes cross-origin directas.
+
+### Desarrollo
+
+Vite redirige `/api/rickmorty/*` hacia la API externa.
+
+Ejemplo:
 
 ```text
+http://localhost:5173/api/rickmorty/character
+        ↓
 https://rickandmortyapi.com/api/character
 ```
 
-La API devuelve los resultados paginados e incluye información para conocer cantidad de registros, páginas disponibles, página siguiente y página anterior.
+### Producción
 
----
+Vercel realiza el mismo comportamiento mediante `rewrites`.
 
-# 14. Servicio de personajes
-
-La comunicación con la API deberá estar separada de los componentes React.
-
-Archivo:
-
-```text
-src/services/characterService.js
-```
-
-Ejemplo:
-
-```javascript
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  "https://rickandmortyapi.com/api";
-
-export const getCharacters = async ({
-  page = 1,
-  name = "",
-  status = "",
-  species = "",
-}) => {
-  const params = new URLSearchParams({
-    page: String(page),
-  });
-
-  if (name) params.append("name", name);
-  if (status) params.append("status", status);
-  if (species) params.append("species", species);
-
-  const response = await fetch(
-    `${API_URL}/character?${params.toString()}`
-  );
-
-  if (!response.ok) {
-    throw new Error("No fue posible obtener los personajes");
-  }
-
-  return response.json();
-};
-```
-
-De esta forma los componentes no tendrán responsabilidad directa sobre la construcción de las peticiones HTTP.
-
----
-
-# 15. Variables de entorno
-
-Se utilizará:
-
-```text
-.env
-```
-
-con:
-
-```env
-VITE_API_URL=https://rickandmortyapi.com/api
-```
-
-En React se accederá mediante:
-
-```javascript
-import.meta.env.VITE_API_URL
-```
-
-Vite expone al código cliente las variables cuyo nombre comienza con `VITE_`. Estas variables no deben utilizarse para almacenar secretos porque pasan a formar parte del código cliente generado.
-
-También se incluirá:
-
-```text
-.env.example
-```
-
-con:
-
-```env
-VITE_API_URL=
-```
-
-El archivo `.env` podrá excluirse del repositorio mediante `.gitignore`.
-
----
-
-# 16. Componente principal
-
-`App.jsx` será responsable de organizar las principales secciones de la aplicación.
-
-Ejemplo conceptual:
-
-```jsx
-function App() {
-  return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <Header />
-
-      <main className="mx-auto max-w-7xl px-4 py-8">
-        <Home />
-      </main>
-    </div>
-  );
-}
-
-export default App;
-```
-
-La lógica relacionada con personajes no deberá concentrarse dentro de `App.jsx`.
-
----
-
-# 17. Tarjeta de personaje
-
-Cada personaje deberá representarse mediante un componente:
-
-```text
-CharacterCard.jsx
-```
-
-La tarjeta podrá mostrar:
-
-* imagen;
-* nombre;
-* estado;
-* especie;
-* género;
-* origen;
-* ubicación.
-
-Ejemplo visual:
-
-```text
-┌─────────────────────────────┐
-│                             │
-│        Imagen personaje     │
-│                             │
-├─────────────────────────────┤
-│ Rick Sanchez                │
-│ ● Alive                     │
-│ Human                       │
-│                             │
-│ Origen: Earth (C-137)       │
-└─────────────────────────────┘
-```
-
-Los colores del estado pueden distinguir:
-
-```text
-Alive   → verde
-Dead    → rojo
-Unknown → gris
-```
-
----
-
-# 18. Diseño visual
-
-La modernización deberá abandonar una estética básica de proyecto académico y adoptar una interfaz más cercana a una aplicación moderna.
-
-Se propone:
-
-* fondo oscuro;
-* tarjetas con bordes suaves;
-* imágenes grandes;
-* sombras discretas;
-* acentos verdes inspirados en Rick & Morty;
-* botones modernos;
-* animaciones pequeñas al pasar el mouse;
-* mayor separación visual entre elementos;
-* tipografía clara;
-* diseño completamente responsive.
-
-Ejemplo de tarjeta:
-
-```jsx
-<article
-  className="
-    overflow-hidden
-    rounded-2xl
-    border
-    border-slate-800
-    bg-slate-900
-    shadow-lg
-    transition
-    duration-300
-    hover:-translate-y-1
-    hover:shadow-xl
-  "
->
-```
-
----
-
-# 19. Responsive Design
-
-La aplicación deberá adaptarse a:
-
-* celulares;
-* tablets;
-* notebooks;
-* monitores de escritorio.
-
-La grilla podrá utilizar:
-
-```jsx
-<div
-  className="
-    grid
-    grid-cols-1
-    gap-6
-    sm:grid-cols-2
-    lg:grid-cols-3
-    xl:grid-cols-4
-  "
->
-```
-
-De esta forma el número de tarjetas cambia automáticamente según el ancho disponible.
-
----
-
-# 20. Buscador
-
-La aplicación incorporará un campo de búsqueda por personaje.
-
-Ejemplo:
-
-```text
-Buscar personaje...
-```
-
-El nombre ingresado se enviará como filtro a la API.
-
-Esto permitirá evitar descargar todos los personajes para posteriormente filtrarlos en el navegador.
-
----
-
-# 21. Filtros
-
-Se podrán incluir filtros por:
-
-```text
-Estado
-- Alive
-- Dead
-- Unknown
-
-Género
-- Female
-- Male
-- Genderless
-- Unknown
-
-Especie
-```
-
-Los filtros deberán combinarse con el buscador.
-
----
-
-# 22. Paginación
-
-La API devuelve hasta 20 documentos por página y proporciona información sobre la cantidad de páginas y enlaces siguiente/anterior.
-
-Por ello se implementará un componente:
-
-```text
-Pagination.jsx
-```
-
-con controles:
-
-```text
-← Anterior
-
-Página 3 de 42
-
-Siguiente →
-```
-
-Los botones deberán quedar deshabilitados cuando no exista una página anterior o siguiente.
-
----
-
-# 23. Estados de la interfaz
-
-La aplicación deberá contemplar cuatro estados principales.
-
-## Cargando
-
-Mientras se consulta la API:
-
-```text
-Cargando personajes...
-```
-
-Preferentemente mediante skeleton cards o un loader.
-
-## Datos disponibles
-
-Se presenta la grilla de personajes.
-
-## Sin resultados
-
-Ejemplo:
-
-```text
-No encontramos personajes con esos filtros.
-```
-
-## Error
-
-Ejemplo:
-
-```text
-No pudimos obtener la información.
-
-Intentar nuevamente
-```
-
-Esto evita mostrar pantallas vacías cuando ocurre un inconveniente.
-
----
-
-# 24. Custom Hook
-
-Para separar todavía más la lógica se podrá implementar:
-
-```text
-useCharacters.js
-```
-
-Responsable de administrar:
-
-```javascript
-characters
-loading
-error
-page
-filters
-```
-
-Conceptualmente:
-
-```javascript
-const {
-  characters,
-  info,
-  loading,
-  error,
-} = useCharacters(filters);
-```
-
-Esto permite mantener los componentes principalmente orientados a presentación.
-
----
-
-# 25. Página de detalle
-
-Como mejora de la aplicación podrá incorporarse una pantalla individual para cada personaje.
-
-Ejemplo:
+Además, el fallback SPA permite acceder directamente a rutas como:
 
 ```text
 /characters/1
 ```
 
-Esta vista podrá mostrar:
+sin obtener un 404 del hosting.
+
+---
+
+## 9. Normalización de paginación
+
+La API devuelve `next` y `prev` como URLs absolutas.
+
+Para que las páginas siguientes sigan pasando por el proxy, el servicio reemplaza conceptualmente:
 
 ```text
-Rick Sanchez
-
-Estado: Alive
-Especie: Human
-Género: Male
-Origen: Earth (C-137)
-Ubicación actual: Citadel of Ricks
-
-Episodios:
-S01E01
-S01E02
-...
+https://rickandmortyapi.com/api
 ```
 
-La Rick and Morty API permite obtener un personaje individual indicando su identificador.
-
----
-
-# 26. Gestión del estado
-
-Para el alcance actual no será necesario incorporar Redux u otra librería global de estado.
-
-Se priorizará:
+por:
 
 ```text
-useState
-useEffect
-custom hooks
-props
+/api/rickmorty
 ```
 
-La arquitectura podrá evolucionar posteriormente si aumenta la complejidad funcional.
+antes de realizar la siguiente solicitud.
 
 ---
 
-# 27. Accesibilidad
+## 10. Hook `useCharacters`
 
-Durante la modernización deberán aplicarse buenas prácticas como:
+Administra:
 
-* utilizar etiquetas HTML semánticas;
-* incluir `alt` en imágenes;
-* asociar `label` a campos;
-* garantizar contraste suficiente;
-* permitir navegación mediante teclado;
-* indicar correctamente botones deshabilitados;
-* evitar depender exclusivamente del color para transmitir información.
+```text
+characters
+info
+search
+status
+gender
+species
+currentPage
+loading
+error
+```
 
-Ejemplo:
+También contiene las acciones para:
 
-```jsx
-<img
-  src={character.image}
-  alt={`Imagen de ${character.name}`}
-/>
+- buscar;
+- cambiar filtros;
+- limpiar filtros;
+- avanzar;
+- retroceder.
+
+---
+
+## 11. Hook `useCharacter`
+
+Se encarga de obtener un personaje individual a partir del ID de la ruta.
+
+Estado administrado:
+
+```text
+character
+loading
+error
+```
+
+Esto mantiene la lógica HTTP fuera de la página de detalle.
+
+---
+
+## 12. Búsqueda y filtros
+
+La aplicación permite combinar:
+
+```text
+Nombre
+Estado
+Género
+Especie
+```
+
+Ejemplos de estado:
+
+```text
+Alive
+Dead
+Unknown
+```
+
+Ejemplos de género:
+
+```text
+Female
+Male
+Genderless
+Unknown
+```
+
+Los filtros se envían directamente a la API para evitar descargar información innecesaria.
+
+---
+
+## 13. Paginación
+
+La API entrega:
+
+```text
+count
+pages
+next
+prev
+```
+
+La interfaz utiliza esta información para mostrar:
+
+```text
+← Anterior    Página X de Y    Siguiente →
+```
+
+Los botones quedan deshabilitados automáticamente cuando no existe una página disponible.
+
+---
+
+## 14. Vista de detalle
+
+Ruta:
+
+```text
+/characters/:id
+```
+
+La pantalla muestra:
+
+- imagen;
+- nombre;
+- ID;
+- estado;
+- especie;
+- género;
+- tipo;
+- origen;
+- última ubicación;
+- cantidad de episodios.
+
+---
+
+## 15. Estados de interfaz
+
+### Loading
+
+Se utilizan skeleton cards para evitar una pantalla vacía durante las consultas.
+
+### Sin resultados
+
+El usuario recibe un mensaje específico cuando la API no encuentra personajes con los filtros seleccionados.
+
+### Error 429
+
+Se informa cuando la API está recibiendo demasiadas solicitudes.
+
+### Otros errores
+
+Se muestra un mensaje reutilizable mediante `ErrorMessage.jsx`.
+
+---
+
+## 16. Routing y 404
+
+Rutas principales:
+
+```text
+/
+/characters/:id
+*
+```
+
+La ruta `*` muestra `NotFound.jsx`, manteniendo una experiencia consistente ante URLs inexistentes.
+
+---
+
+## 17. Diseño y responsive
+
+La interfaz utiliza una estética oscura con acentos verdes.
+
+Incluye:
+
+- tarjetas redondeadas;
+- sombras discretas;
+- transiciones;
+- estados hover;
+- indicadores de estado;
+- imágenes responsive;
+- grillas adaptables;
+- botones modernos.
+
+La grilla utiliza aproximadamente:
+
+```text
+1 columna  → mobile
+2 columnas → small
+3 columnas → desktop
+4 columnas → large desktop
 ```
 
 ---
 
-# 28. Manejo de errores
+## 18. Accesibilidad
 
-Todas las consultas deberán controlar errores.
+Se incorporaron prácticas como:
 
-No se deberá utilizar:
-
-```javascript
-fetch(url).then(...)
-```
-
-sin controlar el resultado HTTP.
-
-La capa `services` deberá determinar si la respuesta fue correcta.
-
-Ejemplo:
-
-```javascript
-if (!response.ok) {
-  throw new Error("Error al consultar la API");
-}
-```
-
-Posteriormente el componente mostrará un mensaje comprensible para el usuario.
+- `alt` en imágenes;
+- labels en formularios;
+- `aria-label` en navegación;
+- `role="alert"` para errores;
+- estados `disabled` reales;
+- elementos semánticos `main`, `nav` y `article`.
 
 ---
 
-# 29. ESLint
+## 19. Calidad de código
 
-El proyecto mantendrá ESLint para detectar:
-
-* variables sin utilizar;
-* errores frecuentes;
-* problemas de sintaxis;
-* prácticas incorrectas en React.
-
-Esto contribuirá a mantener una calidad consistente del código.
-
----
-
-# 30. Scripts npm
-
-Los principales scripts serán:
+Lint:
 
 ```bash
-npm run dev
-npm run build
-npm run preview
 npm run lint
 ```
 
-En los proyectos creados mediante Vite los scripts básicos utilizan `vite`, `vite build` y `vite preview`.
+La configuración utiliza Oxlint.
 
-## Desarrollo
-
-```bash
-npm run dev
-```
-
-Inicia el servidor local.
-
-## Producción
+Build:
 
 ```bash
 npm run build
 ```
 
-Genera la versión optimizada para producción.
-
-Vite genera el bundle de producción mediante `vite build`.
-
-## Preview
+Preview:
 
 ```bash
 npm run preview
 ```
 
-Permite probar localmente el resultado de producción antes del deployment.
-
 ---
 
-# 31. Migración desde Create React App
+## 20. Integración continua
 
-La migración se realizará gradualmente.
-
-## Etapa 1 — Inventario
-
-Identificar:
+El repositorio incluye:
 
 ```text
-componentes actuales
-imágenes
-CSS
-dependencias
-llamadas API
-funcionalidades
+.github/workflows/ci.yml
 ```
 
-## Etapa 2 — Crear estructura Vite
-
-Crear el nuevo entorno React + Vite.
-
-## Etapa 3 — Instalar Tailwind
-
-Configurar Tailwind utilizando el plugin de Vite.
-
-## Etapa 4 — Migrar componentes
-
-Mover progresivamente los componentes React existentes.
-
-## Etapa 5 — Reemplazar CSS
-
-Transformar los estilos existentes en clases Tailwind.
-
-## Etapa 6 — Separar servicios
-
-Extraer las llamadas a la API desde los componentes hacia:
+En cada push o pull request a `master` se ejecuta:
 
 ```text
-src/services/
-```
-
-## Etapa 7 — Refactorizar
-
-Separar componentes demasiado grandes.
-
-## Etapa 8 — Validar
-
-Comprobar:
-
-```text
-búsqueda
-filtros
-personajes
-imágenes
-paginación
-responsive
-errores
-```
-
-## Etapa 9 — Build
-
-Ejecutar:
-
-```bash
+npm ci
+npm run lint
 npm run build
 ```
 
-## Etapa 10 — Deployment
-
-Publicar nuevamente la aplicación en Vercel.
+Esto agrega una validación automática adicional antes de integrar cambios.
 
 ---
 
-# 32. Aspectos que deberán eliminarse de CRA
+## 21. Seguridad
 
-Durante la migración deberán revisarse referencias antiguas como:
+El repositorio incluye `SECURITY.md`.
+
+Principios aplicados:
+
+- no versionar secretos;
+- no publicar tokens;
+- revisar dependencias;
+- validar lint y build antes de integrar cambios.
+
+Actualmente el proyecto no requiere secretos ni variables de entorno.
+
+---
+
+## 22. Deployment
+
+Producción:
 
 ```text
-react-scripts
-npm start
-process.env.REACT_APP_*
-%PUBLIC_URL%
-reportWebVitals
-serviceWorker
+https://rick-morty-sand-seven.vercel.app
 ```
 
-cuando estén presentes y no sean necesarias.
+Configuración:
 
-El comando de desarrollo pasará de:
-
-```bash
-npm start
+```text
+Framework: Vite
+Build Command: npm run build
+Output Directory: dist
 ```
 
-a:
+`vercel.json` contiene tanto el proxy externo como el fallback de la SPA.
+
+---
+
+## 23. Scripts
 
 ```bash
 npm run dev
-```
-
-Y las variables:
-
-```text
-REACT_APP_API_URL
-```
-
-pasarán a utilizar la convención Vite:
-
-```text
-VITE_API_URL
-```
-
----
-
-# 33. Estrategia de componentes
-
-La aplicación deberá aplicar el principio de responsabilidad única.
-
-Incorrecto:
-
-```text
-App.jsx
- ├── API
- ├── filtros
- ├── tarjetas
- ├── paginación
- ├── estilos
- └── errores
-```
-
-Propuesto:
-
-```text
-App
- │
- ├── Header
- │
- └── Home
-      │
-      ├── SearchBar
-      ├── Filters
-      ├── CharacterGrid
-      │    └── CharacterCard
-      │
-      ├── Pagination
-      ├── Loader
-      └── ErrorMessage
-```
-
----
-
-# 34. Experiencia de usuario
-
-La aplicación deberá brindar feedback en todas las acciones.
-
-Cuando el usuario:
-
-```text
-busca
-filtra
-cambia de página
-recarga
-encuentra un error
-no encuentra resultados
-```
-
-la interfaz deberá comunicar claramente el estado actual.
-
----
-
-# 35. Rendimiento
-
-Para mejorar el rendimiento se evitará:
-
-* solicitar datos innecesarios;
-* realizar múltiples consultas idénticas;
-* almacenar información duplicada;
-* utilizar imágenes adicionales innecesariamente;
-* cargar grandes dependencias para funcionalidades simples.
-
-El uso de filtros propios de la API permitirá reducir procesamiento innecesario del lado del cliente.
-
----
-
-# 36. Seguridad
-
-La aplicación no maneja inicialmente información confidencial.
-
-Sin embargo, deberán respetarse algunas reglas:
-
-* no colocar secretos en el frontend;
-* no guardar claves privadas en `.env` del frontend;
-* no publicar tokens;
-* mantener `.env` fuera de Git cuando corresponda;
-* validar errores provenientes de servicios externos.
-
-Las variables `VITE_*` forman parte del código cliente durante la construcción y por ello no deben contener información sensible.
-
----
-
-# 37. Deployment en Vercel
-
-Antes de publicar se ejecutará:
-
-```bash
+npm run lint
 npm run build
+npm run preview
 ```
 
-La carpeta generada por Vite será:
+---
+
+## 24. Validaciones funcionales
 
 ```text
-dist/
+✓ listado
+✓ imágenes
+✓ búsqueda
+✓ filtros
+✓ combinación de filtros
+✓ limpiar filtros
+✓ paginación
+✓ resumen de resultados
+✓ detalle
+✓ navegación
+✓ 404
+✓ skeleton loading
+✓ errores HTTP
+✓ proxy local
+✓ proxy producción
+✓ rutas directas
+✓ lint
+✓ build
+✓ CI
+✓ deployment
 ```
 
-La configuración esperada para un proyecto Vite será:
+---
 
-```text
-Build Command:
-npm run build
+## 25. Mejoras futuras
 
-Output Directory:
-dist
-```
+Posibles extensiones:
 
-El dominio actualmente utilizado podrá mantenerse o reemplazarse por uno nuevo según la estrategia de migración.
+- favoritos con LocalStorage;
+- modo claro/oscuro;
+- episodios y ubicaciones;
+- debounce en búsqueda;
+- filtros persistidos en URL;
+- breadcrumbs;
+- estadísticas;
+- pruebas unitarias y de componentes;
+- mejoras adicionales de accesibilidad.
 
 ---
 
-# 38. Criterios de aceptación
+## 26. Resultado
 
-La modernización se considerará terminada cuando:
+La reconstrucción transformó el proyecto en una aplicación moderna y organizada, con separación de responsabilidades, navegación, filtros, detalle, manejo de estados, proxy consistente entre desarrollo y producción, control de calidad automático y deployment reproducible.
 
-1. El proyecto ejecute correctamente con `npm run dev`.
-2. No dependa de `react-scripts`.
-3. Utilice Vite.
-4. Utilice Tailwind CSS.
-5. Consulte correctamente la Rick and Morty API.
-6. Muestre los personajes.
-7. Muestre correctamente las imágenes.
-8. Controle estados de carga.
-9. Controle errores.
-10. Permita buscar personajes.
-11. Permita navegar entre páginas si se implementa paginación.
-12. Sea responsive.
-13. Funcione correctamente en dispositivos móviles.
-14. `npm run build` termine sin errores.
-15. La versión de producción funcione en Vercel.
-16. El repositorio tenga una estructura organizada.
-17. Exista documentación actualizada en `README.md`.
-
----
-
-# 39. Mejoras opcionales
-
-Una vez terminada la migración principal podrán incorporarse:
-
-* modo claro/oscuro;
-* favoritos utilizando LocalStorage;
-* página individual de personajes;
-* filtros avanzados;
-* búsqueda con debounce;
-* skeleton loading;
-* animaciones;
-* listado de episodios;
-* listado de ubicaciones;
-* estadísticas;
-* botón para limpiar filtros;
-* botón para volver al inicio;
-* breadcrumbs;
-* persistencia de filtros en la URL;
-* pruebas unitarias;
-* tests de componentes.
-
-Estas mejoras no deberían bloquear la migración inicial.
-
----
-
-# 40. Resultado esperado
-
-Al finalizar el proyecto se contará con una aplicación Rick & Morty moderna construida utilizando:
-
-```text
-React
-      +
-Vite
-      +
-Tailwind CSS
-      +
-Fetch API
-      +
-Rick and Morty API
-      +
-npm
-      +
-Vercel
-```
-
-La nueva versión tendrá una estructura más clara, componentes reutilizables, separación entre interfaz y acceso a datos y una experiencia visual adaptable a distintos dispositivos.
-
----
-
-# 41. Conclusión
-
-La modernización permitirá transformar el proyecto original en una aplicación React actualizada y preparada para continuar evolucionando.
-
-La principal modificación técnica será reemplazar Create React App por Vite, acompañada de una reorganización del código y la incorporación de Tailwind CSS como sistema de estilos.
-
-La migración deberá conservar la funcionalidad útil de la aplicación original, evitando una reescritura innecesaria de la lógica que ya funciona, pero aprovechando el proceso para separar responsabilidades, mejorar la calidad del código y actualizar completamente la presentación.
-
-El resultado será un proyecto más limpio, moderno, mantenible y adecuado tanto como trabajo académico como para ser utilizado dentro de un portfolio de desarrollo frontend.
+El resultado final es una base más limpia, mantenible y preparada para seguir evolucionando.
