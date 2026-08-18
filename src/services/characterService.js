@@ -1,8 +1,15 @@
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  "https://rickandmortyapi.com/api";
-
+const API_URL = "/api/rickmorty";
 const CHARACTER_URL = `${API_URL}/character`;
+
+const EXTERNAL_API_URL = "https://rickandmortyapi.com/api";
+
+const normalizeApiUrl = (url) => {
+  if (!url) {
+    return CHARACTER_URL;
+  }
+
+  return url.replace(EXTERNAL_API_URL, API_URL);
+};
 
 export const getCharacters = async ({
   url = CHARACTER_URL,
@@ -11,7 +18,7 @@ export const getCharacters = async ({
   gender = "",
   species = "",
 } = {}) => {
-  let requestUrl = url;
+  let requestUrl = normalizeApiUrl(url);
 
   if (name || status || gender || species) {
     const params = new URLSearchParams();
@@ -44,6 +51,12 @@ export const getCharacters = async ({
       );
     }
 
+    if (response.status === 429) {
+      throw new Error(
+        "La API está recibiendo demasiadas solicitudes. Intentá nuevamente en unos segundos."
+      );
+    }
+
     throw new Error("No se pudieron obtener los personajes");
   }
 
@@ -56,6 +69,12 @@ export const getCharacterById = async (id) => {
   if (!response.ok) {
     if (response.status === 404) {
       throw new Error("No se encontró el personaje");
+    }
+
+    if (response.status === 429) {
+      throw new Error(
+        "La API está recibiendo demasiadas solicitudes. Intentá nuevamente en unos segundos."
+      );
     }
 
     throw new Error(
