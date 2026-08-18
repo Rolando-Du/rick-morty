@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/api/rickmorty/:path*",
+      "destination": "https://rickandmortyapi.com/api/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
